@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+    app:
+     container_name: app
+     build: ./php
+     networks:
+         - backend
+     ports:
+         - "9000:9000"
+     volumes:
+         - ./..:/var/www
+     working_dir: /var/www
+
+    db:
+      container_name: db
+      image: postgres
+      networks:
+        - backend
+      environment:
+        POSTGRES_DB: app
+        POSTGRES_ROOT_PASSWORD: 123
+        POSTGRES_USER: dbuser
+        POSTGRES_PASSWORD: 123
+      ports:
+        - '5432:5432'
+      volumes:
+        - ./db-data:/var/lib/postgresql/data
+      depends_on:
+        - app
+    nginx:
+     container_name: nginx
+     image: nginx:alpine
+     ports:
+        - "80:80"
+     networks:
+        - backend
+     volumes:
+        - ./..:/var/www
+        - ./nginx/conf.d/:/etc/nginx/conf.d/
+     depends_on:
+        - db
+        - app
+
+networks:
+    backend:
